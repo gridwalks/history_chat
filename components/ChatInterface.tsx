@@ -30,7 +30,8 @@ export default function ChatInterface({ onAskQuestion }: ChatInterfaceProps) {
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = { role: 'user', content: input };
-    setMessages((prev) => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInput('');
     setIsLoading(true);
 
@@ -38,7 +39,7 @@ export default function ChatInterface({ onAskQuestion }: ChatInterfaceProps) {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: input, messages: [...messages, userMessage] }),
+        body: JSON.stringify({ messages: newMessages }),
       });
 
       if (!response.ok) {
@@ -52,14 +53,12 @@ export default function ChatInterface({ onAskQuestion }: ChatInterfaceProps) {
       setMessages((prev) => [...prev, assistantMessage]);
 
       if (reader) {
-        let buffer = '';
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
 
           for (const line of lines) {
             if (line.startsWith('0:')) {
