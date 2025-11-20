@@ -42,48 +42,92 @@ export default function ChatInterface({ onAskQuestion }: ChatInterfaceProps) {
         body: JSON.stringify({ messages: newMessages }),
       });
 
+      // Check if response is an error
       if (!response.ok) {
-        throw new Error('Failed to get response');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `Server error: ${response.status}`);
       }
 
+      // Check content type to determine if it's streaming or JSON
+      const contentType = response.headers.get('content-type') || '';
+      
+      if (contentType.includes('application/json')) {
+        // Handle JSON error response
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Unknown error');
+      }
+
+      // Handle streaming response
       const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('No response body');
+      }
+
       const decoder = new TextDecoder();
       let assistantMessage: Message = { role: 'assistant', content: '' };
+      let buffer = '';
 
       setMessages((prev) => [...prev, assistantMessage]);
 
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep incomplete line in buffer
 
-          for (const line of lines) {
+        for (const line of lines) {
+          if (line.trim()) {
+            // AI SDK uses format: "0:text content" for text chunks
             if (line.startsWith('0:')) {
-              try {
-                const text = line.slice(2);
-                if (text) {
-                  assistantMessage.content += text;
-                  setMessages((prev) => {
-                    const newMessages = [...prev];
-                    newMessages[newMessages.length - 1] = { ...assistantMessage };
-                    return newMessages;
-                  });
-                }
-              } catch (e) {
-                // Skip invalid lines
+              const text = line.slice(2);
+              if (text) {
+                assistantMessage.content += text;
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1] = { ...assistantMessage };
+                  return newMessages;
+                });
               }
+            } else if (line.startsWith('8:')) {
+              // Metadata line, skip
+              continue;
+            } else if (line.startsWith(':')) {
+              // Empty line or other format, skip
+              continue;
+            } else {
+              // Try to parse as direct text (fallback)
+              assistantMessage.content += line;
+              setMessages((prev) => {
+                const newMessages = [...prev];
+                newMessages[newMessages.length - 1] = { ...assistantMessage };
+                return newMessages;
+              });
             }
           }
         }
       }
-    } catch (error) {
+
+      // Process any remaining buffer
+      if (buffer.trim()) {
+        if (buffer.startsWith('0:')) {
+          assistantMessage.content += buffer.slice(2);
+        } else {
+          assistantMessage.content += buffer;
+        }
+        setMessages((prev) => {
+          const newMessages = [...prev];
+          newMessages[newMessages.length - 1] = { ...assistantMessage };
+          return newMessages;
+        });
+      }
+    } catch (error: any) {
       console.error('Chat error:', error);
+      const errorMessage = error?.message || 'Sorry, I encountered an error. Please try again.';
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' },
+        { role: 'assistant', content: `Error: ${errorMessage}` },
       ]);
     } finally {
       setIsLoading(false);

@@ -15,13 +15,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { messages } = await request.json();
+    const body = await request.json();
+    const { messages } = body;
     
-    if (!messages || messages.length === 0) {
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
-        { error: 'Messages are required' },
+        { error: 'Messages array is required and must not be empty' },
         { status: 400 }
       );
+    }
+    
+    // Validate message format
+    for (const msg of messages) {
+      if (!msg.role || !msg.content) {
+        return NextResponse.json(
+          { error: 'Each message must have "role" and "content" fields' },
+          { status: 400 }
+        );
+      }
     }
     
     // Initialize Groq model (must be done inside the function for edge runtime)
@@ -53,10 +64,13 @@ ${context}
 
 ` : ''}Provide accurate, well-sourced answers based on the primary sources. If the context doesn't contain relevant information, say so. Always cite specific documents when possible.`;
 
-    // Prepare messages for the AI (useChat sends messages in the correct format)
+    // Prepare messages for the AI - ensure proper format
     const aiMessages = [
       { role: 'system' as const, content: systemPrompt },
-      ...messages,
+      ...messages.map((msg: any) => ({
+        role: msg.role as 'user' | 'assistant',
+        content: String(msg.content),
+      })),
     ];
     
     // Stream response from Groq
@@ -70,8 +84,17 @@ ${context}
     return result.toTextStreamResponse();
   } catch (error: any) {
     console.error('Chat API error:', error);
+    const errorMessage = error?.message || error?.toString() || 'Failed to process chat request';
+    console.error('Error details:', {
+      message: errorMessage,
+      stack: error?.stack,
+      cause: error?.cause,
+    });
     return NextResponse.json(
-      { error: error.message || 'Failed to process chat request' },
+      { 
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+      },
       { status: 500 }
     );
   }
