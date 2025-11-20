@@ -56,9 +56,15 @@ export async function searchSimilarDocuments(
     FROM documents
     ORDER BY embedding <=> ${JSON.stringify(queryEmbedding)}::vector
     LIMIT ${limit}
-  `;
+  ` as Array<{
+    id: string;
+    title: string;
+    content: string;
+    metadata: Record<string, any>;
+    similarity: number;
+  }>;
   
-  return results.map((row: any) => ({
+  return results.map((row) => ({
     id: row.id,
     title: row.title,
     content: row.content,

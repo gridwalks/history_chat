@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { groq } from '@/lib/groq';
 import { getRelevantContext } from '@/lib/rag';
 import { streamText } from 'ai';
 import { createGroq } from '@ai-sdk/groq';
@@ -45,10 +44,10 @@ Provide accurate, well-sourced answers based on the primary sources. If the cont
       model: groqModel('llama-3.1-70b-versatile'),
       messages: aiMessages,
       temperature: 0.7,
-      maxTokens: 1000,
+      maxOutputTokens: 1000,
     });
     
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
   } catch (error: any) {
     console.error('Chat API error:', error);
     return NextResponse.json(
