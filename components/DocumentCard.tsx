@@ -20,11 +20,11 @@ export default function DocumentCard({ document }: DocumentCardProps) {
             />
           </div>
         )}
-        <h3 className="text-lg font-semibold mb-2 line-clamp-2">{document.title}</h3>
+        <h3 className="text-lg font-semibold mb-2 line-clamp-2 text-gray-900">{document.title}</h3>
         {document.description && (
-          <p className="text-sm text-gray-600 line-clamp-3 mb-2">{document.description}</p>
+          <p className="text-sm text-gray-800 line-clamp-3 mb-2">{document.description}</p>
         )}
-        <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+        <div className="flex flex-wrap gap-2 text-xs text-gray-700">
           {document.date && <span>📅 {document.date}</span>}
           {document.creator && <span>👤 {document.creator}</span>}
           {document.type && <span>📄 {document.type}</span>}

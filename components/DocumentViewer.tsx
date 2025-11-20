@@ -9,7 +9,7 @@ interface DocumentViewerProps {
 export default function DocumentViewer({ document }: DocumentViewerProps) {
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-4">{document.title}</h1>
+      <h1 className="text-3xl font-bold mb-4 text-gray-900">{document.title}</h1>
       
       {document.thumbnail && (
         <div className="mb-6">
@@ -24,28 +24,28 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
       <div className="space-y-4">
         {document.description && (
           <div>
-            <h2 className="text-xl font-semibold mb-2">Description</h2>
-            <p className="text-gray-700">{document.description}</p>
+            <h2 className="text-xl font-semibold mb-2 text-gray-900">Description</h2>
+            <p className="text-gray-900">{document.description}</p>
           </div>
         )}
 
         <div className="grid grid-cols-2 gap-4">
           {document.date && (
             <div>
-              <h3 className="font-semibold text-gray-600">Date</h3>
-              <p>{document.date}</p>
+              <h3 className="font-semibold text-gray-800">Date</h3>
+              <p className="text-gray-900">{document.date}</p>
             </div>
           )}
           {document.creator && (
             <div>
-              <h3 className="font-semibold text-gray-600">Creator</h3>
-              <p>{document.creator}</p>
+              <h3 className="font-semibold text-gray-800">Creator</h3>
+              <p className="text-gray-900">{document.creator}</p>
             </div>
           )}
           {document.type && (
             <div>
-              <h3 className="font-semibold text-gray-600">Type</h3>
-              <p>{document.type}</p>
+              <h3 className="font-semibold text-gray-800">Type</h3>
+              <p className="text-gray-900">{document.type}</p>
             </div>
           )}
         </div>
@@ -65,8 +65,8 @@ export default function DocumentViewer({ document }: DocumentViewerProps) {
 
         {document.metadata && (
           <div>
-            <h2 className="text-xl font-semibold mb-2">Metadata</h2>
-            <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+            <h2 className="text-xl font-semibold mb-2 text-gray-900">Metadata</h2>
+            <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto text-sm text-gray-900">
               {JSON.stringify(document.metadata, null, 2)}
             </pre>
           </div>

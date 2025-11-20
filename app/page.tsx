@@ -35,7 +35,7 @@ export default function Home() {
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-3xl font-bold text-gray-900">History Research App</h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-800 mt-2">
             Explore primary sources from the U.S. National Archives
           </p>
         </div>
@@ -58,7 +58,7 @@ export default function Home() {
                 {isSearching ? (
                   <div className="text-center py-8">
                     <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <p className="mt-2 text-gray-600">Searching...</p>
+                    <p className="mt-2 text-gray-800">Searching...</p>
                   </div>
                 ) : searchResults.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -67,7 +67,7 @@ export default function Home() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-800">
                     <p>No results found. Try a different search query.</p>
                   </div>
                 )}
@@ -77,13 +77,13 @@ export default function Home() {
             {!searchQuery && (
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <h2 className="text-xl font-semibold mb-4">Getting Started</h2>
-                <div className="space-y-4 text-gray-700">
+                <div className="space-y-4 text-gray-900">
                   <p>
                     Welcome to the History Research App! This tool helps you discover and analyze
                     primary sources from the U.S. National Archives.
                   </p>
                   <div>
-                    <h3 className="font-semibold mb-2">Features:</h3>
+                    <h3 className="font-semibold mb-2 text-gray-900">Features:</h3>
                     <ul className="list-disc list-inside space-y-1 ml-4">
                       <li>Search millions of historical documents</li>
                       <li>Get AI-powered analysis and context</li>
@@ -111,7 +111,7 @@ export default function Home() {
 
       <footer className="bg-white border-t border-gray-200 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <p className="text-center text-gray-600 text-sm">
+          <p className="text-center text-gray-800 text-sm">
             Powered by National Archives API, Neon PostgreSQL, and Groq AI
           </p>
         </div>
