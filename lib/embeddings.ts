@@ -26,15 +26,20 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Failed to generate embedding: ${error}`);
+      const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
+      const errorMessage = errorData?.error?.message || `HTTP ${response.status}`;
+      throw new Error(`Failed to generate embedding: ${JSON.stringify(errorData)}`);
     }
 
     const data = await response.json();
     return data.data[0].embedding;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating embedding:', error);
-    throw error;
+    // Re-throw with more context
+    if (error.message) {
+      throw error;
+    }
+    throw new Error(`Embedding generation failed: ${error.toString()}`);
   }
 }
 

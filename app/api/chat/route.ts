@@ -5,12 +5,16 @@ import { createGroq } from '@ai-sdk/groq';
 
 export const runtime = 'edge';
 
-const groqModel = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
-});
-
 export async function POST(request: NextRequest) {
   try {
+    // Check for Groq API key
+    if (!process.env.GROQ_API_KEY) {
+      return NextResponse.json(
+        { error: 'GROQ_API_KEY is not configured. Please set it in your environment variables.' },
+        { status: 500 }
+      );
+    }
+
     const { messages } = await request.json();
     
     if (!messages || messages.length === 0) {
@@ -20,13 +24,21 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Initialize Groq model (must be done inside the function for edge runtime)
+    const groqModel = createGroq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
+    
     // Get relevant context from RAG system using the last user message
     const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop();
     const searchQuery = lastUserMessage?.content || '';
     
     let context = '';
     try {
-      context = await getRelevantContext(searchQuery);
+      // Only try to get context if we have OpenAI API key for embeddings
+      if (process.env.OPENAI_API_KEY) {
+        context = await getRelevantContext(searchQuery);
+      }
     } catch (error) {
       console.error('RAG context error (continuing without context):', error);
       // Continue without context if RAG fails

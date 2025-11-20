@@ -77,10 +77,24 @@ export async function searchSimilarDocuments(
  * Get relevant context for a query
  */
 export async function getRelevantContext(query: string, maxResults: number = 3): Promise<string> {
-  const documents = await searchSimilarDocuments(query, maxResults);
-  
-  return documents
-    .map(doc => `Title: ${doc.title}\nContent: ${doc.content}`)
-    .join('\n\n---\n\n');
+  try {
+    // Check if we have the required environment variables
+    if (!process.env.OPENAI_API_KEY || !process.env.NEON_DATABASE_URL) {
+      return ''; // Return empty context if embeddings/DB not configured
+    }
+    
+    const documents = await searchSimilarDocuments(query, maxResults);
+    
+    if (documents.length === 0) {
+      return ''; // No documents found
+    }
+    
+    return documents
+      .map(doc => `Title: ${doc.title}\nContent: ${doc.content}`)
+      .join('\n\n---\n\n');
+  } catch (error) {
+    console.error('Error getting RAG context:', error);
+    return ''; // Return empty context on error
+  }
 }
 
